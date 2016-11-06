@@ -5,16 +5,22 @@
   
   <title>关于类拷贝工具的分析与比较 | GMpj</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.co">
+  <meta name="description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。
+
+常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="关于类拷贝工具的分析与比较">
 <meta property="og:url" content="http://yoursite.com/2016/11/06/关于类拷贝的分析/index.html">
 <meta property="og:site_name" content="GMpj">
-<meta property="og:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.co">
-<meta property="og:updated_time" content="2016-11-06T14:14:25.000Z">
+<meta property="og:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。
+
+常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.">
+<meta property="og:updated_time" content="2016-11-06T14:21:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于类拷贝工具的分析与比较">
-<meta name="twitter:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.co">
+<meta name="twitter:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。
+
+常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.">
   
     <link rel="alternate" href="/atom.xml" title="GMpj" type="application/atom+xml">
   
@@ -86,9 +92,13 @@
     <div class="article-entry" itemprop="articleBody">
       
         <hr>
-<h2 id="关于类拷贝："><a href="#关于类拷贝：" class="headerlink" title="关于类拷贝："></a>关于类拷贝：</h2><h2 id="在Java项目尤其是Java-Web项目中，由于分层设计的原因，经常出现很多层次的Java-Bean，这些Java-Bean虽然是不同的类，但是他们的属性有99-是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。"><a href="#在Java项目尤其是Java-Web项目中，由于分层设计的原因，经常出现很多层次的Java-Bean，这些Java-Bean虽然是不同的类，但是他们的属性有99-是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。" class="headerlink" title="在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。"></a>在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。</h2><h2 id="常用的类拷贝工具有："><a href="#常用的类拷贝工具有：" class="headerlink" title="常用的类拷贝工具有："></a>常用的类拷贝工具有：</h2><p>Apache的两个版本：（反射机制）<br>org.apache.commons.beanutils.PropertyUtils.copyProperties(Object dest, Object orig)<br>org.apache.commons.beanutils.BeanUtils.copyProperties(Object dest, Object orig)<br>Spring版本：（反射机制）<br>org.springframework.beans.BeanUtils.copyProperties(Object source, Object target, Class editable, String[] ignoreProperties)<br>cglib版本：（使用动态代理，效率高）</p>
-<h2 id="net-sf-cglib-beans-BeanCopier-copy-Object-paramObject1-Object-paramObject2-Converter-paramConverter"><a href="#net-sf-cglib-beans-BeanCopier-copy-Object-paramObject1-Object-paramObject2-Converter-paramConverter" class="headerlink" title="net.sf.cglib.beans.BeanCopier.copy(Object paramObject1, Object paramObject2, Converter paramConverter)"></a>net.sf.cglib.beans.BeanCopier.copy(Object paramObject1, Object paramObject2, Converter paramConverter)</h2><h2 id="各工具的使用注意事项："><a href="#各工具的使用注意事项：" class="headerlink" title="各工具的使用注意事项："></a>各工具的使用注意事项：</h2><p>|工具                    |是否支持用户扩展类型转化|参数(sourceObject，targetObject）的顺序|<br>是否能够对空值属性进行操作|是否支持对同名不同类型属性的拷贝|当Java Bean出现get和set方法不匹配|<br>|:———————:|:—————–:|:———————————-:|<br>:———————-:|:——————–:|:—————————-:|<br>|Apache PropertyUtils    |不支持                |逆序                                 |<br>可以                     |不支持，会抛出异常        |仍然支持                              |<br>|Apache BeanUtils        |支持                |逆序                                 |<br>不可以，会抛出异常            |支持，能进行简单的转化    |仍然支持                              |<br>|Spring BeanUtils        |支持                |顺序                                 |<br>可以                        |不支持                |仍然支持                              |<br>|Cglib BeanCopier        |支持，但是难用        |顺序                                 |</p>
-<h2 id="可以-支持，该属性不拷贝-创建拷贝的时候出错"><a href="#可以-支持，该属性不拷贝-创建拷贝的时候出错" class="headerlink" title="可以                        |支持，该属性不拷贝        |创建拷贝的时候出错                      |"></a>可以                        |支持，该属性不拷贝        |创建拷贝的时候出错                      |</h2><h2 id="各工具的性能比较："><a href="#各工具的性能比较：" class="headerlink" title="各工具的性能比较："></a>各工具的性能比较：</h2><p>在这里，创建了两个类型不同，但是属性名完全相同的两个Java Bean,对他们进行拷贝，在拷贝次数较少和拷贝次数较多的情况下，得出如下的比较结果，每次计时以毫秒为单位。<br>|10次测拷贝                |第一次    |第二次    |第三次    |平均值    |<br>|:———————:|:—–:|:—–:|:—–:|:—–:|<br>|Apache BeanUtils        |95        |101    |102     |99.33    |<br>|Apache PropertyUtils    |10        |6        |8         |8        |<br>|Spring BeanUtils        |57        |66        |63      |186    |<br>|Cglib BeanCopier        |0        |0        |1         |0.33    |</p>
+<h2 id="关于类拷贝："><a href="#关于类拷贝：" class="headerlink" title="关于类拷贝："></a>关于类拷贝：</h2><p>在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。</p>
+<hr>
+<h2 id="常用的类拷贝工具有："><a href="#常用的类拷贝工具有：" class="headerlink" title="常用的类拷贝工具有："></a>常用的类拷贝工具有：</h2><p>Apache的两个版本：（反射机制）<br>org.apache.commons.beanutils.PropertyUtils.copyProperties(Object dest, Object orig)<br>org.apache.commons.beanutils.BeanUtils.copyProperties(Object dest, Object orig)<br>Spring版本：（反射机制）<br>org.springframework.beans.BeanUtils.copyProperties(Object source, Object target, Class editable, String[] ignoreProperties)<br>cglib版本：（使用动态代理，效率高）<br>net.sf.cglib.beans.BeanCopier.copy(Object paramObject1, Object paramObject2, Converter paramConverter)</p>
+<hr>
+<h2 id="各工具的使用注意事项："><a href="#各工具的使用注意事项：" class="headerlink" title="各工具的使用注意事项："></a>各工具的使用注意事项：</h2><p>|工具                    |是否支持用户扩展类型转化|参数(sourceObject，targetObject）的顺序|<br>是否能够对空值属性进行操作|是否支持对同名不同类型属性的拷贝|当Java Bean出现get和set方法不匹配|<br>|:———————:|:—————–:|:———————————-:|<br>:———————-:|:——————–:|:—————————-:|<br>|Apache PropertyUtils    |不支持                |逆序                                 |<br>可以                     |不支持，会抛出异常        |仍然支持                              |<br>|Apache BeanUtils        |支持                |逆序                                 |<br>不可以，会抛出异常            |支持，能进行简单的转化    |仍然支持                              |<br>|Spring BeanUtils        |支持                |顺序                                 |<br>可以                        |不支持                |仍然支持                              |<br>|Cglib BeanCopier        |支持，但是难用        |顺序                                 |<br>可以                        |支持，该属性不拷贝        |创建拷贝的时候出错                      |</p>
+<hr>
+<h2 id="各工具的性能比较："><a href="#各工具的性能比较：" class="headerlink" title="各工具的性能比较："></a>各工具的性能比较：</h2><p>在这里，创建了两个类型不同，但是属性名完全相同的两个Java Bean,对他们进行拷贝，在拷贝次数较少和拷贝次数较多的情况下，得出如下的比较结果，每次计时以毫秒为单位。<br>|10次测拷贝                |第一次    |第二次    |第三次    |平均值    |<br>|:———————:|:—–:|:—–:|:—–:|:—–:|<br>|Apache BeanUtils        |95        |101    |102     |99.33    |<br>|Apache PropertyUtils    |10        |6        |8         |8        |<br>|Spring BeanUtils        |57        |66        |63      |186    |<br>|Cglib BeanCopier        |0        |0        |1         |0.33    |</p>
 <table>
 <thead>
 <tr>
@@ -137,7 +147,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="civ6q3oqd00036quwcge26g9o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="civ6q95r000017ruwn6qtxvoa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
