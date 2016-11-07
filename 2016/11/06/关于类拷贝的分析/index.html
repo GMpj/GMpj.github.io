@@ -15,7 +15,7 @@
 <meta property="og:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。
 
 常用的类拷贝工具有：Apache的两个版本：（反射机制）org.apache.commons.beanutils.PropertyUtils.">
-<meta property="og:updated_time" content="2016-11-07T11:30:13.000Z">
+<meta property="og:updated_time" content="2016-11-07T11:06:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于类拷贝工具的分析与比较">
 <meta name="twitter:description" content="关于类拷贝：在Java项目尤其是Java Web项目中，由于分层设计的原因，经常出现很多层次的Java Bean，这些Java Bean虽然是不同的类，但是他们的属性有99%是一样的。因此经常需要对不同的类进行属性拷贝，将这些属性名相同的属性进行拷贝。
@@ -97,7 +97,7 @@
 <h2 id="常用的类拷贝工具有："><a href="#常用的类拷贝工具有：" class="headerlink" title="常用的类拷贝工具有："></a>常用的类拷贝工具有：</h2><p>Apache的两个版本：（反射机制）<br>org.apache.commons.beanutils.PropertyUtils.copyProperties(Object dest, Object orig)<br>org.apache.commons.beanutils.BeanUtils.copyProperties(Object dest, Object orig)<br>Spring版本：（反射机制）<br>org.springframework.beans.BeanUtils.copyProperties(Object source, Object target, Class editable, String[] ignoreProperties)<br>cglib版本：（使用动态代理，效率高）<br>net.sf.cglib.beans.BeanCopier.copy(Object paramObject1, Object paramObject2, Converter paramConverter)</p>
 <hr>
 <h2 id="各工具的使用注意事项："><a href="#各工具的使用注意事项：" class="headerlink" title="各工具的使用注意事项："></a>各工具的使用注意事项：</h2><p>这里参考了<a href="http://blog.csdn.net/jianhua0902/article/details/8155368" target="_blank" rel="external">http://blog.csdn.net/jianhua0902/article/details/8155368</a> 这篇文章</p>
-<p><table class="table" style="word-break: break-all;"><br>    <tr><br>        <th>工具</th><br>        <th>是否支持用户扩展类型转化</th><br>        <th>参数(sourceObject，targetObject）的顺序</th><br>        <th>是否能够对空值属性进行操作</th><br>        <th>是否支持对同名不同类型属性的拷贝</th><br>        <th>当Java Bean出现get和set方法不匹配</th><br>    </tr><br>    <tr><br>        <td>Apache PropertyUtils</td><br>        <td>不支持</td><br>        <td>逆序</td><br>        <td>可以</td><br>        <td>不支持，会抛出异常</td><br>        <td>仍然支持</td><br>    </tr><br>    <tr><br>        <td>Apache BeanUtils</td><br>        <td>支持</td><br>        <td>逆序</td><br>        <td>不可以，会抛出异常</td><br>        <td>支持，能进行简单的转化</td><br>        <td>仍然支持</td><br>    </tr><br>    <tr><br>        <td>Spring BeanUtils</td><br>        <td>支持</td><br>        <td>顺序</td><br>        <td>可以</td><br>        <td>不支持，会抛出异常</td><br>        <td>仍然支持</td><br>    </tr><br>    <tr><br>        <td>Cglib BeanCopier</td><br>        <td>支持，但是难用</td><br>        <td>顺序</td><br>        <td>可以</td><br>        <td>支持，该属性不拷贝    </td><br>        <td>创建拷贝的时候出错</td><br>    </tr></table></p>
+<p><table class="table" style="word-break: break-all;">    <tr>        <th>工具</th>       <th>是否支持用户扩展类型转化</th>       <th>参数(sourceObject，targetObject）的顺序</th>        <th>是否能够对空值属性进行操作</th>        <th>是否支持对同名不同类型属性的拷贝</th>       <th>当Java Bean出现get和set方法不匹配</th>    </tr>    <tr>        <td>Apache PropertyUtils</td>        <td>不支持</td>        <td>逆序</td>       <td>可以</td>        <td>不支持，会抛出异常</td>        <td>仍然支持</td>    </tr>    <tr>        <td>Apache BeanUtils</td>       <td>支持</td>        <td>逆序</td>        <td>不可以，会抛出异常</td>        <td>支持，能进行简单的转化</td>        <td>仍然支持</td>    </tr>    <tr>       <td>Spring BeanUtils</td>      <td>支持</td>        <td>顺序</td>        <td>可以</td>        <td>不支持，会抛出异常</td>        <td>仍然支持</td>    </tr>    <tr>        <td>Cglib BeanCopier</td>        <td>支持，但是难用</td>        <td>顺序</td>        <td>可以</td>        <td>支持，该属性不拷贝    </td>        <td>创建拷贝的时候出错</td>    </tr></table></p>
 <h2 id=""><a href="#" class="headerlink" title=""></a></h2><h2 id="各工具的性能比较："><a href="#各工具的性能比较：" class="headerlink" title="各工具的性能比较："></a>各工具的性能比较：</h2><p>在这里，创建了两个类型不同，但是属性名完全相同的两个Java Bean。<br>（测试案例来自于<a href="http://www.cnblogs.com/kaka/archive/2013/03/06/2945514.html）" target="_blank" rel="external">http://www.cnblogs.com/kaka/archive/2013/03/06/2945514.html）</a><br>对他们进行拷贝，在拷贝次数较少和拷贝次数较多的情况下，得出如下的比较结果，每次计时以毫秒为单位。</p>
 <table>
 <thead>
@@ -188,7 +188,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="civ7zj1xn0003q2uw377aocwn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="civ7z047l0003onuwvayyee1i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
