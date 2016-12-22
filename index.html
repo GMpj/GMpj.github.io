@@ -53,7 +53,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -63,174 +63,6 @@
 </header>
       <div class="outer">
         <section id="main">
-  
-    <article id="post-java并发编程" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/12/22/java并发编程/" class="article-date">
-  <time datetime="2016-12-22T14:04:00.000Z" itemprop="datePublished">2016-12-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/12/22/java并发编程/">java并发编程一（资源访问控制）</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>并发编程，是指通过多个线程之间的相互配合来实现一定的功能。因此多线程之间的控制（资源请求控制，线程执行控制）是实现并发编程的基础。</p>
-<hr>
-<h2 id="多线程的资源访问控制"><a href="#多线程的资源访问控制" class="headerlink" title="多线程的资源访问控制"></a>多线程的资源访问控制</h2><p>首先我们先看一下多线程之间的资源访问控制。</p>
-<p>程序中的资源被经过一些操作可以得到我们想要的结果，当资源只被一个线程所执行，或者线程的操作不依赖于资源的上下文时，资源的处理结果一般都是可靠的，否则往往会出现意想不到的结果。</p>
-<p>我们可以通过以下几种方式对资源的操作进行控制。</p>
-<hr>
-<h2 id="1-让资源不可变"><a href="#1-让资源不可变" class="headerlink" title="1.让资源不可变"></a>1.让资源不可变</h2><p>当资源是不可变的时候，程序也就无法对它进行操作，自然也不会出现线程安全问题。</p>
-<p>对于在访问和更新相关变量时出现的竞争条件问题，可以通过这些将这些变量全部保存在一个不可变对象中来消除问题。</p>
-<p>满足以下条件的对象才是不可变的：<br>1）对象创建以后其状态就不能修改<br>2）对于的所有域都是final类型<br>3）对象是安全创建的（在对象的创建期间，this引用没有逸出）</p>
-<hr>
-<h2 id="2-将资源封闭在线程内"><a href="#2-将资源封闭在线程内" class="headerlink" title="2.将资源封闭在线程内"></a>2.将资源封闭在线程内</h2><p>如果一个资源的创建到消失，都在一个线程内部的话，其他的线程也就无法对它进行操作，这样就保证了线程操作结果的可靠性。这种技术称之为线程封闭。</p>
-<p>线程封闭的技术一个常见的应用场景是JDBC的Connection对象，在典型的服务器应用程序中，线程从连接池获得一个Connection对象，然后使用该对象处理请求，使用完后再返还给连接池。由于大多数请求（例如Servlet或者EJB调用）都是又单个线程采用同步的方式来处理，并且在Connection对象返回之前，连接池不会将它再分配给其他的线程，因此，这种处理方式保证了Connection的线程安全。</p>
-<p>有以下三种方式实现线程封闭。</p>
-<hr>
-<h2 id="2-1Ad-hoc线程封闭"><a href="#2-1Ad-hoc线程封闭" class="headerlink" title="2.1Ad-hoc线程封闭"></a>2.1Ad-hoc线程封闭</h2><p>Ad-hoc线程封闭式指，维护线程封闭性的职责完全由程序来承担。Ad-hoc线程封闭式非常脆弱的，因为没有任何一种语言特性，例如可见性修饰符或者局部变量，能将对象封闭到模板线程上。因此在程序中使用的非常少。</p>
-<hr>
-<h2 id="2-2栈封闭"><a href="#2-2栈封闭" class="headerlink" title="2.2栈封闭"></a>2.2栈封闭</h2><p>栈封闭式线程封闭的一种特例，在栈封闭中，只能通过局部变量才能访问对象。局部变量的固有属性之一就是封闭在执行线程中，其他线程无法访问这个栈。</p>
-<p>需要注意的是，在维持栈封闭时，需要注意被引用的对象不能逸出。因此编码人员在编写代码时，对于不能逸出的对象要特别进行标明，防止后续的维护人员错误的使对象逸出。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">loadTheArk</span><span class="params">(Collection&lt;Animal&gt; candidates)</span></span>&#123;</span><br><span class="line">		List&lt;Animal&gt; animals;</span><br><span class="line">		<span class="keyword">int</span> numPairs=<span class="number">0</span>;</span><br><span class="line">		 Animal candidate=<span class="keyword">null</span>;</span><br><span class="line">		</span><br><span class="line">		animals=<span class="keyword">new</span> ArrayList&lt;Animal&gt;();</span><br><span class="line">		animals.addAll( candidates);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span>(Animal a:animals)&#123;</span><br><span class="line">			numPairs=numPairs+a.getPairs();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> numPairs;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-<p>在上面的程序中，无论如何操作animals都不会对其他线程造成影响，每个线程维护自己的变量，但是如果发布了animals的引用，那么就会造成对象的逸出，其他线程对该引用进行操作时，就会造成这个程序的错误。</p>
-<hr>
-<h2 id="2-3ThreadLocal类"><a href="#2-3ThreadLocal类" class="headerlink" title="2.3ThreadLocal类"></a>2.3ThreadLocal类</h2><p>维护线程封闭性的更规范的方法是使用ThreadLocal，这个类能使线程中某个值与保存值得对象关联起来。ThreadLocal提供了get和set等访问接口或者方法，这些方法为每个使用该变量的线程都有一个独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
-<p>ThreadLocal对象通常用于防止对可变的单例实例变量或者全局变量进行共享。例如，在单线程应用程序中可能会维护一个全局的数据库连接，并在程序启动时初始化这个连接对象，从而避免在调用每个方法时都需要传播一个Connection对象。由于JDBC的连接对象不一定是线程安全的。因此，当多线程应用程序在没有协调的情况下使用全局变量时，就不是线程安全的。通过将JDBC的连接保存到ThreadLoacl对象中，每个线程都会拥有属于自己的连接，如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> ThreadLocal&lt;Connection&gt; connectionHolder =</span><br><span class="line">			<span class="keyword">new</span> ThreadLocal&lt;Connection&gt;()&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="function"><span class="keyword">public</span> Connection <span class="title">initialValue</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">return</span> DriverManager.getConnection(url);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Connection <span class="title">getConnection</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">return</span> connectionHolder.get();</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-<p>当某个程序初次调用ThreadLocal.get方法时，就会调用initialValue来获取初始值。从概念上看，可以将ThreadLocal<t>视为包含了Map<thread,t>对象，其中保存了特定于该线程的值，但ThreadLocal的实现并非如此。这些特定于线程的值保存在Thread对象中，当线程终止后，这些值会作为垃圾回收。<br>当某个频繁执行的操作需要一个临界对象，例如一个缓冲区，而同时有希望避免在每次执行时都重新分配该临界对象，就可以使用这项技术。</thread,t></t></p>
-<p>假设需要将一个单线程应用程序移植到多线程环境中，通过将共享的全局变量转移为ThreadLocal对象，可以维护线程安全性。然而，如果将应用程序范围内的缓存转换为线程局部的缓存，就不会有太大的作用。</p>
-<p>在实现应用程序框架时大量使用了ThreadLocal。例如，在EJB的调用期间，J2EE容器需要将一个事务上下文与某个执行中的线程关联起来。通过将事务上下文保存在静态的ThreadLocal对象中，就可以很容易实现这个功能：当框架代码需要判断当前运行的是哪一个事务时，只需要从这个ThreadLocal对象中读取事务的上下文。这种机制很方便，因为它避免了在调用每个方法时都传播上下文信息，然而这也将是用该机制的代码与框架耦合在一起。</p>
-<p>ThreadLocal变量类似于全局变量，它能降低代码的可重用性，并在类之间引入隐含的耦合性，因此在使用时要格外小心。</p>
-<hr>
-<h2 id="3-安全发布对象"><a href="#3-安全发布对象" class="headerlink" title="3.安全发布对象"></a>3.安全发布对象</h2><p>前面讲了安全访问对象的一些办法，但是对象安全访问并不能保证对象一定是安全的。如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span>  Holder holder;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">()</span></span>&#123;</span><br><span class="line">		holder=<span class="keyword">new</span> Holder(<span class="number">42</span>);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-<p>上述这段代码即使在初始化过程中正确构建了不变性的条件在多线程状态下运行会发生错误，这是由于可见性的问题，其他线程可能看到尚未创建好完整的Holder对象。这样不安全的发布对象将造成，除了发布对象外，其他线程看到的Holder域是一个空引用或者是之前的值，或者，线程看到的Holder引用的值是最新的，但是状态值是失效的，更加严重的是，线程第一次看到的状态值是失效的，第二次读取时得到更新值，这个时候就会发生错误。因此对于对象不仅要安全的引用，还要安全的发布。</p>
-<p>如果上述Holder域是不可变的，那么即使没有安全的发布，程序也不会发生错误。对于不可变对象来说，Java内部模式提供了特殊的初始化保证，即使对象没有安全的发布，对象仍然可以安全的访问。</p>
-<p>可以通过以下几步构造一个不可变的对象：<br>1）将类声明为final，所以它不能被继承；<br>2）将所有的成员声明为私有的，这样就不允许直接访问这些成员；<br>3）对变量不要提供setter方法；<br>4）将所有可变的成员声明为final，这样只能对它们赋值一次；<br>5）通过构造器初始化所有成员，进行深拷贝（deep copy）；<br>6）在getter方法中，不要直接返回对象本身，而是克隆对象，并返回对象的拷贝；</p>
-<p>如果想要安全的发布一个对象，那么对象的引用以及对象的状态必须同时对于其他线程可见。</p>
-<p>一个正确构造的对象可以通过以下几种方式进行发布：<br>1.在静态初始化函数中初始化一个对象的引用，最简单的方法就是使用静态的初始化器。<br>2.将对象的引用保存到volatile类型的域或者AtmicReferance对象中。<br>3.将对象的引用保存到某个正确构造对象的final类型域中。<br>4.将对象的引用保存到一个由锁保护的域中。</p>
-<p>java容器中有一些特别的容器，可以保证存放在里面的对象可以安全的发布。它们分别是HashTable、synchronizedMap、ConcurrentMap、Vector、CopyOnWriteArrayList、CopyOnWriteArraySet、synchronizedList、synchronizedSet、BlockingQueue以及ConcurrentLinkedQuene。</p>
-<p>如果一个对象在发布之后从技术上看是可变的，但是其状态在发布之后不会再改变，那么把这种对象称之为事实不可变对象，对于这种对象，只要能够安全发布即可。通过使用事实不可变对象，即能够简化开发还能够提高程序性能。</p>
-<p>如何对象是可变的，那么不仅要在发布的时候使用同步，在访问的时候同样需要同步来保证后续操作的可见性。</p>
-<p>因此，对象的发布取决于它的可变性：<br>1.不可变的对象可以通过任意的机制发布。<br>2.事实不可变的对象必须通过安全方式来发布。<br>3.可变对象必须通过安全方式来发布，并且对象的操作必须是线程安全的或者由某个锁保护起来。</p>
-<p>在并发程序中使用和共享对象时，可以使用一些实用的策略来保证对象的正确性：<br>1.线程封闭。线程封闭的对象只能由一个线程拥有，对象被封闭在线程中，只能由这个线程修改。<br>2.只读共享。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但是任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。<br>3.线程安全共享。线程安全的对象在其内部实现同步，因此多个线程可以通过公有接口来进行访问而不需要进一步的同步。<br>4.保护对象。被保护的对象只能通过持有特定的锁来访问，保护对象包括封装在其他线程安全对象中的对象，已经已经发布的并且由某个特定锁保护的对象。</p>
-<p>除了对资源的访问控制，也可以对线程的执行进行控制。</p>
-<p>大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。但是实际情况中，这种方法有着很严重的缺陷，尤其是需要创建大量线程时，因为线程生命周期的开销非常高，尤其是在请求量很高，但是处理过程是轻量的情况下，将浪费大量额计算资源。另外如果可运行的线程数量多于可用处理器的数量，那么有些线程将闲置，大量空闲的线程会占用很多内存，给垃圾回收器带来压力。另外一个问题是可创建线程的数量存在一个闲置，这个闲置受到平台操作系统，JVM等环境的影响。因此我们需要使用一定的策略来对线程的创建和执行进行控制。<br>1.Executor框架<br>1.1任务的创建<br>在JAVA类库中，任务执行的主要抽象不是Thread，而是Executor。Executor是个简单的接口，但是它提供了一种标准的方法将任务的提交过程与执行构成解耦开，并用Runnable来表示任务。Executor的实现还提供了对生命周期的支持，以及统计信息收集、应用程序管理机制和性能监视等机制。<br>Executor是基于生产者-消费者模式，提交任务的操作相当于生产者，执行任务的线程则相当于消费者。如果要在程序中实现一个生产者-消费者的设计，那么最简单的方式通常就是使用Executor。<br>下面是一个使用Executor来实现的Web服务器<br>class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
-<pre><code>public static void main(String []args) throws IOException{
-    ServerSocket socket=new ServerSocket(80);
-    while(true){
-        final Socket connection=socket.accept();
-        Runnable task=new Runnable() {
-
-            public void run() {
-                handleRequest(connection);
-
-            }
-        };
-        exec.execute(task);
-    }
-}
-</code></pre><p>}<br>通过使用Executor，将请求出处理任务的提交与任务的实际执行解耦开来，并且只需要采用另一种不同的Executor实现，就可以改变服务器的行为。<br>1.2任务生命周期的管理<br>Executor扩展了ExecutorService接口，添加了一些用于生命周期管理的方法。其中shutdown方法将执行平缓的关闭过程：不再接受新的任务，同时等待已经提交的任务执行完成。shutdownNow方法将执行粗暴的关闭过程，它将取消所有运行中的任务，并且不再启动队列中尚未开始执行的任务。<br>2.Callable和Future<br>Executor框架使用Runable作为基本的任务表示形式，但是Runable是一种有很大局限性的抽象，虽然run能写入到日志文件或者将结果放入某个共享的数据结构，但他不能返回一个值或者抛出一个受检查的异常。<br>实际上许多任务都是存在延迟的计算，比如执行数据库查询、从网络上获取资源，对于这些任务，Callable是一种更好的抽象：它认为主入口点将返回一个值，并可能抛出一个异常。在Executor中，有一些辅助的方法可以将Runable等其他任务封装成一个Callable。<br>Future表示一个任务的生命周期，并提供相应的方法来判断是否已经完成或者取消，以及获得任务的结果和取消任务等。其中get方法的行为取决于任务的状态。如果任务已经完成，那么get会立即返回或者抛出一个Exception，如果任务没有完成，那么get将阻塞并直到任务完成。如果任务抛出了异常，那么get将该异常封装为ExecutionException并重新抛出。如果任务取消，那么get将抛出CancellationException。如果get抛出了ExceptionException，那么可以通过getCause来获得被封装的初始异常。<br>可以通过许多种方法创建一个Future来描述任务.ExceptionService中的所有submit方法都将返回一个Future，从而将一个Runable或者Callable提交给Executor，并得到一个Future用来获得任务的执行结果或者取消任务。还可以显示的为某个指定的Runable或者Callable实例一个FutureTask。<br>为了是页面渲染实现更高的并发性，首先将渲染过程分解为两个任务，一个是渲染所有的文本，另一个是下载所有的图像。可以用Callable和Future来表示这些协同任务之间的交互。代码如下：<br>class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
-<pre><code>public static void main(String []args) throws IOException{
-    ServerSocket socket=new ServerSocket(80);
-    while(true){
-        final Socket connection=socket.accept();
-        Runnable task=new Runnable() {
-
-            public void run() {
-                handleRequest(connection);
-
-            }
-        };
-        exec.execute(task);
-    }
-}
-</code></pre><p>}</p>
-<p>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
-<pre><code>void renderPage(CharSequence source){
-    final List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);
-    Callable&lt;List&lt;ImageData&gt;&gt; task=
-            new Callable&lt;List&lt;ImageData&gt;&gt;(){
-
-                public List&lt;ImageData&gt; call() throws Exception {
-                    List&lt;ImageData&gt; result=new ArrayList&lt;ImageData&gt;();
-                    for(ImageInfo imageInfo:imageInfos){
-                        result.add(imageInfo.downloadImage());
-                    }
-                    return result;
-                }
-
-    };
-
-    Future&lt;List&lt;ImageData&gt;&gt;future=exec.submit(task);
-    renderText(source);
-
-    try{
-        List&lt;ImageData&gt;imageData=future.get();
-        for(ImageData data:iamgeData)
-            renderImage(data);
-    }catch(InterruptedException e){
-        //重新设置线程的中断状态
-        Thread.currentThread().interrupt();
-        //由于不需要结果，因此重新取消任务
-        future.cancle(true);
-    }catch(ExecutionException e){
-        throw e.getCause();
-    }
-}
-</code></pre><p>}<br>Futureender中创建了一个Callbale来下载所有的图像，并将其提交到一个ExecutorService。这将返回一个描述任务执行情况的Future。当主任务需要图像是，它将等待Future.get的调用结果。如果幸运的话，当开始请求是所有的图像就已经开始下载了，即使没有，至少图像下载的任务已经提前开始了。<br>3.CompletionService<br>如果想Executor提交了一组计算任务，并且希望在计算完成后获得结果，那么可以保留与每个任务关联的Future，然后反复使用get方法，同时将参数timeout设置为0，从而通过轮询来判断任务是否完成。这种办法虽然可行，但是繁琐。我们可以使用CompletionService来进行处理。<br>CompletionService将Executor和BlockingQuene的功能融合在了一起。可以将Callable任务提交给它进行执行，然后使用类似于队列操作的take和poll方法来获得已经完成的结果，而这些结果会在完成是被封装成Future。<br>针对上面的页面渲染功能，如果使用CompletionService的话可以从两个方面来进行提高：缩短总运行时间以及提高响应性。为每一幅图像的下载都创建一个独立的任务，并在线程池中执行它们，从而将串行的下载过程转化为并行的过程：这将减少下载所有图像的总时间。此外，通过从CompletionService中获取结果以及使每张图片在下载完成后立刻显示出来，能使用户获得一个更加动态和更高响应性的用户界面。代码如下：<br>public void renderPage(CharSequence source){<br>        List<imageinfo> info=scanForImageInfo(source);<br>        CompletionService<imagedata> completionService=<br>                new ExecutorCompletionService<imagedata>(executor) ;</imagedata></imagedata></imageinfo></p>
-<pre><code>    for(final ImageInfo imageInfo:info){
-        completionService.submit(new Callable&lt;ImageData&gt;() {
-            public ImageData call(){
-                return imageInfo.downloadImage();
-            }
-        });
-
-        renderTxt(source);
-
-        try{
-            for(int t=0,n=info.size();t&lt;n;t++){
-                Future&lt;ImageData&gt; f=completionService.take();
-                ImageData imageData=f.get();
-                renderImage(iamgeData);
-            }
-        }catch(InterruptedException e){
-            Thread.currentThread().interrupt();
-        }catch (ExecutionException e){
-            throw launderThrowable(e.getCause());
-        }
-    }
-}
-</code></pre><p>}</p>
-<p>除了对线程的执行需要进行控制以外，还需要控制任务的取消和关闭。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程/" data-id="cix0hoe2i0003pkp2zf44bfdi" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
   
     <article id="post-java并发编程一（资源访问控制）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -300,7 +132,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程一（资源访问控制）/" data-id="cix0hoe2l0004pkp28e02dspk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程一（资源访问控制）/" data-id="cix0hub9p0006qap2tszbb9vr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -342,7 +174,7 @@
 <h2 id="1-1任务的创建"><a href="#1-1任务的创建" class="headerlink" title="1.1任务的创建"></a>1.1任务的创建</h2><p>在JAVA类库中，任务执行的主要抽象不是Thread，而是Executor。Executor是个简单的接口，但是它提供了一种标准的方法将任务的提交过程与执行构成解耦开，并用Runnable来表示任务。Executor的实现还提供了对生命周期的支持，以及统计信息收集、应用程序管理机制和性能监视等机制。</p>
 <p>Executor是基于生产者-消费者模式，提交任务的操作相当于生产者，执行任务的线程则相当于消费者。如果要在程序中实现一个生产者-消费者的设计，那么最简单的方式通常就是使用Executor。</p>
 <p>下面是一个使用Executor来实现的Web服务器。</p>
-<p>```java<br>class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
+<p>```java<br>public class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
 <pre><code>public static void main(String []args) throws IOException{
     ServerSocket socket=new ServerSocket(80);
     while(true){
@@ -368,8 +200,8 @@
 <p>Future表示一个任务的生命周期，并提供相应的方法来判断是否已经完成或者取消，以及获得任务的结果和取消任务等。其中get方法的行为取决于任务的状态。如果任务已经完成，那么get会立即返回或者抛出一个Exception，如果任务没有完成，那么get将阻塞并直到任务完成。如果任务抛出了异常，那么get将该异常封装为ExecutionException并重新抛出。如果任务取消，那么get将抛出CancellationException。如果get抛出了ExceptionException，那么可以通过getCause来获得被封装的初始异常。</p>
 <p>可以通过许多种方法创建一个Future来描述任务。ExceptionService中的所有submit方法都将返回一个Future，从而将一个Runable或者Callable提交给Executor，并得到一个Future用来获得任务的执行结果或者取消任务。还可以显示的为某个指定的Runable或者Callable实例一个FutureTask。</p>
 <p>为了是页面渲染实现更高的并发性，首先将渲染过程分解为两个任务，一个是渲染所有的文本，另一个是下载所有的图像。可以用Callable和Future来表示这些协同任务之间的交互。</p>
-<p>示例代码如下：<br>```java</p>
-<p>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
+<p>示例代码如下：</p>
+<p>```java<br>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
 <pre><code>//渲染页面
 void renderPage(CharSequence source){
     final List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);
@@ -418,7 +250,8 @@ void renderPage(CharSequence source){
 <h2 id="3-CompletionService"><a href="#3-CompletionService" class="headerlink" title="3.CompletionService"></a>3.CompletionService</h2><p>如果想Executor提交了一组计算任务，并且希望在计算完成后获得结果，那么可以保留与每个任务关联的Future，然后反复使用get方法，同时将参数timeout设置为0，从而通过轮询来判断任务是否完成。这种办法虽然可行，但是繁琐。我们可以使用CompletionService来进行处理。</p>
 <p>CompletionService将Executor和BlockingQuene的功能融合在了一起。可以将Callable任务提交给它进行执行，然后使用类似于队列操作的take和poll方法来获得已经完成的结果，而这些结果会在完成是被封装成Future。</p>
 <p>针对上面的页面渲染功能，如果使用CompletionService的话可以从两个方面来进行提高：缩短总运行时间以及提高响应性。为每一幅图像的下载都创建一个独立的任务，并在线程池中执行它们，从而将串行的下载过程转化为并行的过程：这将减少下载所有图像的总时间。此外，通过从CompletionService中获取结果以及使每张图片在下载完成后立刻显示出来，能使用户获得一个更加动态和更高响应性的用户界面。</p>
-<p>代码如下：<br>```java<br>public void renderPage(CharSequence source){</p>
+<p>代码如下：</p>
+<p>```java<br>public void renderPage(CharSequence source){</p>
 <pre><code>    List&lt;ImageInfo&gt; info=scanForImageInfo(source);
 
     //通过executor初始化CompletionService
@@ -461,7 +294,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hoe3c000dpkp203k9l348" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hub9q0007qap2pheezoas" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -592,7 +425,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="cix0hoe2p0006pkp27bl58ik1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="cix0hub9r0009qap27yj8ajs2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -658,7 +491,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/09/04/http与https的区别/" data-id="cix0hoe210000pkp2721i69xo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/09/04/http与https的区别/" data-id="cix0hub8o0000qap2up51sndn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -754,7 +587,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/15/java-IO/" data-id="cix0hoe2a0001pkp294zzvkug" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/15/java-IO/" data-id="cix0hub8u0001qap2ms0a6e6t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -795,7 +628,7 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Arkiv</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
@@ -805,13 +638,9 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Siste innlegg</h3>
     <div class="widget">
       <ul>
-        
-          <li>
-            <a href="/2016/12/22/java并发编程/">java并发编程一（资源访问控制）</a>
-          </li>
         
           <li>
             <a href="/2016/12/22/java并发编程一（资源访问控制）/">java并发编程一（资源访问控制）</a>
@@ -827,6 +656,10 @@ void renderPage(CharSequence source){
         
           <li>
             <a href="/2016/09/04/http与https的区别/">http与https的区别（转载）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/15/java-IO/">java IO</a>
           </li>
         
       </ul>

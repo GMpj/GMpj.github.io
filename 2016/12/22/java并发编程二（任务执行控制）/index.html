@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="GMpj">
 <meta property="og:description" content="上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。
 大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。">
-<meta property="og:updated_time" content="2016-12-22T14:51:52.000Z">
+<meta property="og:updated_time" content="2016-12-22T14:58:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="java并发编程二（任务执行控制）">
 <meta name="twitter:description" content="上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。
@@ -57,7 +57,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -96,7 +96,7 @@
 <h2 id="1-1任务的创建"><a href="#1-1任务的创建" class="headerlink" title="1.1任务的创建"></a>1.1任务的创建</h2><p>在JAVA类库中，任务执行的主要抽象不是Thread，而是Executor。Executor是个简单的接口，但是它提供了一种标准的方法将任务的提交过程与执行构成解耦开，并用Runnable来表示任务。Executor的实现还提供了对生命周期的支持，以及统计信息收集、应用程序管理机制和性能监视等机制。</p>
 <p>Executor是基于生产者-消费者模式，提交任务的操作相当于生产者，执行任务的线程则相当于消费者。如果要在程序中实现一个生产者-消费者的设计，那么最简单的方式通常就是使用Executor。</p>
 <p>下面是一个使用Executor来实现的Web服务器。</p>
-<p>```java<br>class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
+<p>```java<br>public class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
 <pre><code>public static void main(String []args) throws IOException{
     ServerSocket socket=new ServerSocket(80);
     while(true){
@@ -122,8 +122,8 @@
 <p>Future表示一个任务的生命周期，并提供相应的方法来判断是否已经完成或者取消，以及获得任务的结果和取消任务等。其中get方法的行为取决于任务的状态。如果任务已经完成，那么get会立即返回或者抛出一个Exception，如果任务没有完成，那么get将阻塞并直到任务完成。如果任务抛出了异常，那么get将该异常封装为ExecutionException并重新抛出。如果任务取消，那么get将抛出CancellationException。如果get抛出了ExceptionException，那么可以通过getCause来获得被封装的初始异常。</p>
 <p>可以通过许多种方法创建一个Future来描述任务。ExceptionService中的所有submit方法都将返回一个Future，从而将一个Runable或者Callable提交给Executor，并得到一个Future用来获得任务的执行结果或者取消任务。还可以显示的为某个指定的Runable或者Callable实例一个FutureTask。</p>
 <p>为了是页面渲染实现更高的并发性，首先将渲染过程分解为两个任务，一个是渲染所有的文本，另一个是下载所有的图像。可以用Callable和Future来表示这些协同任务之间的交互。</p>
-<p>示例代码如下：<br>```java</p>
-<p>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
+<p>示例代码如下：</p>
+<p>```java<br>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
 <pre><code>//渲染页面
 void renderPage(CharSequence source){
     final List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);
@@ -172,7 +172,8 @@ void renderPage(CharSequence source){
 <h2 id="3-CompletionService"><a href="#3-CompletionService" class="headerlink" title="3.CompletionService"></a>3.CompletionService</h2><p>如果想Executor提交了一组计算任务，并且希望在计算完成后获得结果，那么可以保留与每个任务关联的Future，然后反复使用get方法，同时将参数timeout设置为0，从而通过轮询来判断任务是否完成。这种办法虽然可行，但是繁琐。我们可以使用CompletionService来进行处理。</p>
 <p>CompletionService将Executor和BlockingQuene的功能融合在了一起。可以将Callable任务提交给它进行执行，然后使用类似于队列操作的take和poll方法来获得已经完成的结果，而这些结果会在完成是被封装成Future。</p>
 <p>针对上面的页面渲染功能，如果使用CompletionService的话可以从两个方面来进行提高：缩短总运行时间以及提高响应性。为每一幅图像的下载都创建一个独立的任务，并在线程池中执行它们，从而将串行的下载过程转化为并行的过程：这将减少下载所有图像的总时间。此外，通过从CompletionService中获取结果以及使每张图片在下载完成后立刻显示出来，能使用户获得一个更加动态和更高响应性的用户界面。</p>
-<p>代码如下：<br>```java<br>public void renderPage(CharSequence source){</p>
+<p>代码如下：</p>
+<p>```java<br>public void renderPage(CharSequence source){</p>
 <pre><code>    List&lt;ImageInfo&gt; info=scanForImageInfo(source);
 
     //通过executor初始化CompletionService
@@ -215,7 +216,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hoe3c000dpkp203k9l348" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hub9q0007qap2pheezoas" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -274,7 +275,7 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Arkiv</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
@@ -284,13 +285,9 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Siste innlegg</h3>
     <div class="widget">
       <ul>
-        
-          <li>
-            <a href="/2016/12/22/java并发编程/">java并发编程一（资源访问控制）</a>
-          </li>
         
           <li>
             <a href="/2016/12/22/java并发编程一（资源访问控制）/">java并发编程一（资源访问控制）</a>
@@ -306,6 +303,10 @@ void renderPage(CharSequence source){
         
           <li>
             <a href="/2016/09/04/http与https的区别/">http与https的区别（转载）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/15/java-IO/">java IO</a>
           </li>
         
       </ul>
