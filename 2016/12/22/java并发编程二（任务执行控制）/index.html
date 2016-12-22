@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>java并发编程二（任务执行控制） | GMpj</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。
+大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java并发编程二（任务执行控制）">
+<meta property="og:url" content="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/index.html">
+<meta property="og:site_name" content="GMpj">
+<meta property="og:description" content="上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。
+大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。">
+<meta property="og:updated_time" content="2016-12-22T14:51:52.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java并发编程二（任务执行控制）">
+<meta name="twitter:description" content="上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。
+大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。">
+  
+    <link rel="alternate" href="/atom.xml" title="GMpj" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">GMpj</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java并发编程二（任务执行控制）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/12/22/java并发编程二（任务执行控制）/" class="article-date">
+  <time datetime="2016-12-22T14:04:00.000Z" itemprop="datePublished">2016-12-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      java并发编程二（任务执行控制）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>上一节简单介绍了关于资源访问方面的控制，但是除了对资源的访问控制，也可以对线程的执行进行控制。</p>
+<p>大多数的并发应用程序都是围绕“任务执行”来进行构造的，在理想情况下，各个任务之间是相互独立的，任务并不依赖于其他任务的状态、结果和边界效应。越高的独立性越有助于实现并发，因为在足够多的处理资源情况下，这些独立的任务都可以并行的执行。在正常负载的情况下，为每个任务分配一个线程的方法能够提升串行执行的性能。但是实际情况中，这种方法有着很严重的缺陷，尤其是需要创建大量线程时，因为线程生命周期的开销非常高，尤其是在请求量很高，但是处理过程是轻量的情况下，将浪费大量额计算资源。另外如果可运行的线程数量多于可用处理器的数量，那么有些线程将闲置，大量空闲的线程会占用很多内存，给垃圾回收器带来压力。另外一个问题是可创建线程的数量存在一个闲置，这个闲置受到平台操作系统，JVM等环境的影响。因此我们需要使用一定的策略来对线程的创建和执行进行控制。</p>
+<p>下面简单介绍一下控制任务执行的几种方法。</p>
+<hr>
+<h2 id="1-Executor框架"><a href="#1-Executor框架" class="headerlink" title="1.Executor框架"></a>1.Executor框架</h2><hr>
+<h2 id="1-1任务的创建"><a href="#1-1任务的创建" class="headerlink" title="1.1任务的创建"></a>1.1任务的创建</h2><p>在JAVA类库中，任务执行的主要抽象不是Thread，而是Executor。Executor是个简单的接口，但是它提供了一种标准的方法将任务的提交过程与执行构成解耦开，并用Runnable来表示任务。Executor的实现还提供了对生命周期的支持，以及统计信息收集、应用程序管理机制和性能监视等机制。</p>
+<p>Executor是基于生产者-消费者模式，提交任务的操作相当于生产者，执行任务的线程则相当于消费者。如果要在程序中实现一个生产者-消费者的设计，那么最简单的方式通常就是使用Executor。</p>
+<p>下面是一个使用Executor来实现的Web服务器。</p>
+<p>```java<br>class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
+<pre><code>public static void main(String []args) throws IOException{
+    ServerSocket socket=new ServerSocket(80);
+    while(true){
+        final Socket connection=socket.accept();
+        Runnable task=new Runnable() {
+
+            public void run() {
+                handleRequest(connection);
+
+            }
+        };
+        exec.execute(task);
+    }
+}
+</code></pre><p>}<br>```java</p>
+<p>通过使用Executor，将请求出处理任务的提交与任务的实际执行解耦开来，并且只需要采用另一种不同的Executor实现，就可以改变服务器的行为。</p>
+<hr>
+<h2 id="1-2任务生命周期的管理"><a href="#1-2任务生命周期的管理" class="headerlink" title="1.2任务生命周期的管理"></a>1.2任务生命周期的管理</h2><p>Executor扩展了ExecutorService接口，添加了一些用于生命周期管理的方法。其中shutdown方法将执行平缓的关闭过程：不再接受新的任务，同时等待已经提交的任务执行完成。shutdownNow方法将执行粗暴的关闭过程，它将取消所有运行中的任务，并且不再启动队列中尚未开始执行的任务。</p>
+<p>由于ExecutorService由Executor扩展而来，因此ExecutorService可以使用Executor的初始化方法。</p>
+<hr>
+<h2 id="2-Callable和Future"><a href="#2-Callable和Future" class="headerlink" title="2.Callable和Future"></a>2.Callable和Future</h2><p>Executor框架使用Runable作为基本的任务表示形式，但是Runable是一种有很大局限性的抽象，虽然run能写入到日志文件或者将结果放入某个共享的数据结构，但他不能返回一个值或者抛出一个受检查的异常。也就是说你不能等待线程的返回值来进行一些操作。</p>
+<p>然而实际上许多任务都是存在延迟的计算，比如执行数据库查询、从网络上获取资源，对于这些任务，Callable是一种更好的抽象：它认为主入口点将返回一个值，并可能抛出一个异常。在Executor中，有一些辅助的方法可以将Runable等其他任务封装成一个Callable。</p>
+<p>Future表示一个任务的生命周期，并提供相应的方法来判断是否已经完成或者取消，以及获得任务的结果和取消任务等。其中get方法的行为取决于任务的状态。如果任务已经完成，那么get会立即返回或者抛出一个Exception，如果任务没有完成，那么get将阻塞并直到任务完成。如果任务抛出了异常，那么get将该异常封装为ExecutionException并重新抛出。如果任务取消，那么get将抛出CancellationException。如果get抛出了ExceptionException，那么可以通过getCause来获得被封装的初始异常。</p>
+<p>可以通过许多种方法创建一个Future来描述任务。ExceptionService中的所有submit方法都将返回一个Future，从而将一个Runable或者Callable提交给Executor，并得到一个Future用来获得任务的执行结果或者取消任务。还可以显示的为某个指定的Runable或者Callable实例一个FutureTask。</p>
+<p>为了是页面渲染实现更高的并发性，首先将渲染过程分解为两个任务，一个是渲染所有的文本，另一个是下载所有的图像。可以用Callable和Future来表示这些协同任务之间的交互。</p>
+<p>示例代码如下：<br>```java</p>
+<p>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
+<pre><code>//渲染页面
+void renderPage(CharSequence source){
+    final List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);
+
+    //生成任务
+    Callable&lt;List&lt;ImageData&gt;&gt; task=
+            new Callable&lt;List&lt;ImageData&gt;&gt;(){
+
+                public List&lt;ImageData&gt; call() throws Exception {
+                    List&lt;ImageData&gt; result=new ArrayList&lt;ImageData&gt;();
+
+                    for(ImageInfo imageInfo:imageInfos){
+                        result.add(imageInfo.downloadImage());
+                    }
+
+                    return result;
+                }
+
+    };
+
+    //任务提交
+    Future&lt;List&lt;ImageData&gt;&gt;future=exec.submit(task);
+
+    renderText(source);
+
+    try{
+        //等待任务执行结果
+        List&lt;ImageData&gt;imageData=future.get();
+
+        //渲染图片
+        for(ImageData data:iamgeData)
+            renderImage(data);
+
+    }catch(InterruptedException e){
+        //重新设置线程的中断状态
+        Thread.currentThread().interrupt();
+        //由于不需要结果，因此重新取消任务
+        future.cancle(true);
+    }catch(ExecutionException e){
+        throw e.getCause();
+    }
+}
+</code></pre><p>}<br>```java</p>
+<p>Futureender中创建了一个Callbale来下载所有的图像，并将其提交到一个ExecutorService。这将返回一个描述任务执行情况的Future。当主任务需要图像是，它将等待Future.get的调用结果。如果幸运的话，当开始请求是所有的图像就已经开始下载了，即使没有，至少图像下载的任务已经提前开始了。</p>
+<hr>
+<h2 id="3-CompletionService"><a href="#3-CompletionService" class="headerlink" title="3.CompletionService"></a>3.CompletionService</h2><p>如果想Executor提交了一组计算任务，并且希望在计算完成后获得结果，那么可以保留与每个任务关联的Future，然后反复使用get方法，同时将参数timeout设置为0，从而通过轮询来判断任务是否完成。这种办法虽然可行，但是繁琐。我们可以使用CompletionService来进行处理。</p>
+<p>CompletionService将Executor和BlockingQuene的功能融合在了一起。可以将Callable任务提交给它进行执行，然后使用类似于队列操作的take和poll方法来获得已经完成的结果，而这些结果会在完成是被封装成Future。</p>
+<p>针对上面的页面渲染功能，如果使用CompletionService的话可以从两个方面来进行提高：缩短总运行时间以及提高响应性。为每一幅图像的下载都创建一个独立的任务，并在线程池中执行它们，从而将串行的下载过程转化为并行的过程：这将减少下载所有图像的总时间。此外，通过从CompletionService中获取结果以及使每张图片在下载完成后立刻显示出来，能使用户获得一个更加动态和更高响应性的用户界面。</p>
+<p>代码如下：<br>```java<br>public void renderPage(CharSequence source){</p>
+<pre><code>    List&lt;ImageInfo&gt; info=scanForImageInfo(source);
+
+    //通过executor初始化CompletionService
+    CompletionService&lt;ImageData&gt; completionService=
+            new ExecutorCompletionService&lt;ImageData&gt;(executor) ;
+
+    for(final ImageInfo imageInfo:info){
+
+        //任务提交
+        completionService.submit(new Callable&lt;ImageData&gt;() {
+
+            public ImageData call(){
+                return imageInfo.downloadImage();
+            }
+
+        });
+
+        renderTxt(source);
+
+        try{
+            for(int t=0,n=info.size();t&lt;n;t++){
+                //获得任务执行的结果
+                Future&lt;ImageData&gt; f=completionService.take();
+
+                ImageData imageData=f.get();
+                renderImage(iamgeData);
+            }
+        }catch(InterruptedException e){
+            Thread.currentThread().interrupt();
+        }catch (ExecutionException e){
+            throw launderThrowable(e.getCause());
+        }
+    }
+}
+</code></pre><p>}<br>```java</p>
+<p>在初始化CompletionService的时候，我们可以指定不同的executor，也可以指定相同的executor。这与Future是非常相似的。</p>
+<hr>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>通过围绕任务执行来设计应用程序，可以简化开发过程，并有助于实现并发。Executor框架将任务提交与执行策略解耦开来，同时还支持多种不同类型的执行策略。当需要创建线程执行任务是，可以考虑使用Executor。除此之外我们还可以通过Callable和Future来获得对任务更多的控制。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hoe3c000dpkp203k9l348" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/12/22/java并发编程一（资源访问控制）/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          java并发编程一（资源访问控制）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/11/06/关于类拷贝的分析/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">关于类拷贝工具的分析与比较</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/JAVA/" style="font-size: 10px;">JAVA</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/22/java并发编程/">java并发编程一（资源访问控制）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/12/22/java并发编程一（资源访问控制）/">java并发编程一（资源访问控制）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/12/22/java并发编程二（任务执行控制）/">java并发编程二（任务执行控制）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/关于类拷贝的分析/">关于类拷贝工具的分析与比较</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/04/http与https的区别/">http与https的区别（转载）</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Peder<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
