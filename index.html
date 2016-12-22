@@ -53,7 +53,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -132,7 +132,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程一（资源访问控制）/" data-id="cix0hub9p0006qap2tszbb9vr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程一（资源访问控制）/" data-id="cix0i4m8o0003x2p2jw71oj1i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -174,22 +174,7 @@
 <h2 id="1-1任务的创建"><a href="#1-1任务的创建" class="headerlink" title="1.1任务的创建"></a>1.1任务的创建</h2><p>在JAVA类库中，任务执行的主要抽象不是Thread，而是Executor。Executor是个简单的接口，但是它提供了一种标准的方法将任务的提交过程与执行构成解耦开，并用Runnable来表示任务。Executor的实现还提供了对生命周期的支持，以及统计信息收集、应用程序管理机制和性能监视等机制。</p>
 <p>Executor是基于生产者-消费者模式，提交任务的操作相当于生产者，执行任务的线程则相当于消费者。如果要在程序中实现一个生产者-消费者的设计，那么最简单的方式通常就是使用Executor。</p>
 <p>下面是一个使用Executor来实现的Web服务器。</p>
-<p>```java<br>public class TaskExecutionWebServer{<br>    private static final int NTHREADS=100;<br>    private static final Executor exec=Executors.newFixedThreadPool(NTHREADS);</p>
-<pre><code>public static void main(String []args) throws IOException{
-    ServerSocket socket=new ServerSocket(80);
-    while(true){
-        final Socket connection=socket.accept();
-        Runnable task=new Runnable() {
-
-            public void run() {
-                handleRequest(connection);
-
-            }
-        };
-        exec.execute(task);
-    }
-}
-</code></pre><p>}<br>```java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TaskExecutionWebServer</span></span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> NTHREADS=<span class="number">100</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Executor exec=Executors.newFixedThreadPool(NTHREADS);</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> IOException</span>&#123;</span><br><span class="line">		ServerSocket socket=<span class="keyword">new</span> ServerSocket(<span class="number">80</span>);</span><br><span class="line">		<span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">			<span class="keyword">final</span> Socket connection=socket.accept();</span><br><span class="line">			Runnable task=<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">				</span><br><span class="line">				<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">					handleRequest(connection);</span><br><span class="line">					</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;;</span><br><span class="line">			exec.execute(task);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>通过使用Executor，将请求出处理任务的提交与任务的实际执行解耦开来，并且只需要采用另一种不同的Executor实现，就可以改变服务器的行为。</p>
 <hr>
 <h2 id="1-2任务生命周期的管理"><a href="#1-2任务生命周期的管理" class="headerlink" title="1.2任务生命周期的管理"></a>1.2任务生命周期的管理</h2><p>Executor扩展了ExecutorService接口，添加了一些用于生命周期管理的方法。其中shutdown方法将执行平缓的关闭过程：不再接受新的任务，同时等待已经提交的任务执行完成。shutdownNow方法将执行粗暴的关闭过程，它将取消所有运行中的任务，并且不再启动队列中尚未开始执行的任务。</p>
@@ -201,92 +186,14 @@
 <p>可以通过许多种方法创建一个Future来描述任务。ExceptionService中的所有submit方法都将返回一个Future，从而将一个Runable或者Callable提交给Executor，并得到一个Future用来获得任务的执行结果或者取消任务。还可以显示的为某个指定的Runable或者Callable实例一个FutureTask。</p>
 <p>为了是页面渲染实现更高的并发性，首先将渲染过程分解为两个任务，一个是渲染所有的文本，另一个是下载所有的图像。可以用Callable和Future来表示这些协同任务之间的交互。</p>
 <p>示例代码如下：</p>
-<p>```java<br>class FutureRenderer{<br>    private static final ExecutorService exec=…;</p>
-<pre><code>//渲染页面
-void renderPage(CharSequence source){
-    final List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);
-
-    //生成任务
-    Callable&lt;List&lt;ImageData&gt;&gt; task=
-            new Callable&lt;List&lt;ImageData&gt;&gt;(){
-
-                public List&lt;ImageData&gt; call() throws Exception {
-                    List&lt;ImageData&gt; result=new ArrayList&lt;ImageData&gt;();
-
-                    for(ImageInfo imageInfo:imageInfos){
-                        result.add(imageInfo.downloadImage());
-                    }
-
-                    return result;
-                }
-
-    };
-
-    //任务提交
-    Future&lt;List&lt;ImageData&gt;&gt;future=exec.submit(task);
-
-    renderText(source);
-
-    try{
-        //等待任务执行结果
-        List&lt;ImageData&gt;imageData=future.get();
-
-        //渲染图片
-        for(ImageData data:iamgeData)
-            renderImage(data);
-
-    }catch(InterruptedException e){
-        //重新设置线程的中断状态
-        Thread.currentThread().interrupt();
-        //由于不需要结果，因此重新取消任务
-        future.cancle(true);
-    }catch(ExecutionException e){
-        throw e.getCause();
-    }
-}
-</code></pre><p>}<br>```java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FutureRenderer</span></span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ExecutorService exec=...;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//渲染页面</span></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">renderPage</span><span class="params">(CharSequence source)</span></span>&#123;</span><br><span class="line">		<span class="keyword">final</span> List&lt;ImageInfo&gt; imageInfos=scanForImageInfo(source);</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//生成任务</span></span><br><span class="line">		Callable&lt;List&lt;ImageData&gt;&gt; task=</span><br><span class="line">				<span class="keyword">new</span> Callable&lt;List&lt;ImageData&gt;&gt;()&#123;</span><br><span class="line"></span><br><span class="line">					<span class="function"><span class="keyword">public</span> List&lt;ImageData&gt; <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">						List&lt;ImageData&gt; result=<span class="keyword">new</span> ArrayList&lt;ImageData&gt;();</span><br><span class="line"></span><br><span class="line">						<span class="keyword">for</span>(ImageInfo imageInfo:imageInfos)&#123;</span><br><span class="line">							result.add(imageInfo.downloadImage());</span><br><span class="line">						&#125;</span><br><span class="line"></span><br><span class="line">						<span class="keyword">return</span> result;</span><br><span class="line">					&#125;</span><br><span class="line">			</span><br><span class="line">		&#125;;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//任务提交</span></span><br><span class="line">		Future&lt;List&lt;ImageData&gt;&gt;future=exec.submit(task);</span><br><span class="line">		</span><br><span class="line">		renderText(source);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">try</span>&#123;</span><br><span class="line">			<span class="comment">//等待任务执行结果</span></span><br><span class="line">			List&lt;ImageData&gt;imageData=future.get();</span><br><span class="line"></span><br><span class="line">			<span class="comment">//渲染图片</span></span><br><span class="line">			<span class="keyword">for</span>(ImageData data:iamgeData)</span><br><span class="line">				renderImage(data);</span><br><span class="line"></span><br><span class="line">		&#125;<span class="keyword">catch</span>(InterruptedException e)&#123;</span><br><span class="line">			<span class="comment">//重新设置线程的中断状态</span></span><br><span class="line">			Thread.currentThread().interrupt();</span><br><span class="line">			<span class="comment">//由于不需要结果，因此重新取消任务</span></span><br><span class="line">			future.cancle(<span class="keyword">true</span>);</span><br><span class="line">		&#125;<span class="keyword">catch</span>(ExecutionException e)&#123;</span><br><span class="line">			<span class="keyword">throw</span> e.getCause();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Futureender中创建了一个Callbale来下载所有的图像，并将其提交到一个ExecutorService。这将返回一个描述任务执行情况的Future。当主任务需要图像是，它将等待Future.get的调用结果。如果幸运的话，当开始请求是所有的图像就已经开始下载了，即使没有，至少图像下载的任务已经提前开始了。</p>
 <hr>
 <h2 id="3-CompletionService"><a href="#3-CompletionService" class="headerlink" title="3.CompletionService"></a>3.CompletionService</h2><p>如果想Executor提交了一组计算任务，并且希望在计算完成后获得结果，那么可以保留与每个任务关联的Future，然后反复使用get方法，同时将参数timeout设置为0，从而通过轮询来判断任务是否完成。这种办法虽然可行，但是繁琐。我们可以使用CompletionService来进行处理。</p>
 <p>CompletionService将Executor和BlockingQuene的功能融合在了一起。可以将Callable任务提交给它进行执行，然后使用类似于队列操作的take和poll方法来获得已经完成的结果，而这些结果会在完成是被封装成Future。</p>
 <p>针对上面的页面渲染功能，如果使用CompletionService的话可以从两个方面来进行提高：缩短总运行时间以及提高响应性。为每一幅图像的下载都创建一个独立的任务，并在线程池中执行它们，从而将串行的下载过程转化为并行的过程：这将减少下载所有图像的总时间。此外，通过从CompletionService中获取结果以及使每张图片在下载完成后立刻显示出来，能使用户获得一个更加动态和更高响应性的用户界面。</p>
 <p>代码如下：</p>
-<p>```java<br>public void renderPage(CharSequence source){</p>
-<pre><code>    List&lt;ImageInfo&gt; info=scanForImageInfo(source);
-
-    //通过executor初始化CompletionService
-    CompletionService&lt;ImageData&gt; completionService=
-            new ExecutorCompletionService&lt;ImageData&gt;(executor) ;
-
-    for(final ImageInfo imageInfo:info){
-
-        //任务提交
-        completionService.submit(new Callable&lt;ImageData&gt;() {
-
-            public ImageData call(){
-                return imageInfo.downloadImage();
-            }
-
-        });
-
-        renderTxt(source);
-
-        try{
-            for(int t=0,n=info.size();t&lt;n;t++){
-                //获得任务执行的结果
-                Future&lt;ImageData&gt; f=completionService.take();
-
-                ImageData imageData=f.get();
-                renderImage(iamgeData);
-            }
-        }catch(InterruptedException e){
-            Thread.currentThread().interrupt();
-        }catch (ExecutionException e){
-            throw launderThrowable(e.getCause());
-        }
-    }
-}
-</code></pre><p>}<br>```java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">renderPage</span><span class="params">(CharSequence source)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">		List&lt;ImageInfo&gt; info=scanForImageInfo(source);</span><br><span class="line"></span><br><span class="line">		<span class="comment">//通过executor初始化CompletionService</span></span><br><span class="line">		CompletionService&lt;ImageData&gt; completionService=</span><br><span class="line">				<span class="keyword">new</span> ExecutorCompletionService&lt;ImageData&gt;(executor) ;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">final</span> ImageInfo imageInfo:info)&#123;</span><br><span class="line"></span><br><span class="line">			<span class="comment">//任务提交</span></span><br><span class="line">			completionService.submit(<span class="keyword">new</span> Callable&lt;ImageData&gt;() &#123;</span><br><span class="line"></span><br><span class="line">				<span class="function"><span class="keyword">public</span> ImageData <span class="title">call</span><span class="params">()</span></span>&#123;</span><br><span class="line">					<span class="keyword">return</span> imageInfo.downloadImage();</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">			&#125;);</span><br><span class="line">			</span><br><span class="line">			renderTxt(source);</span><br><span class="line">			</span><br><span class="line">			<span class="keyword">try</span>&#123;</span><br><span class="line">				<span class="keyword">for</span>(<span class="keyword">int</span> t=<span class="number">0</span>,n=info.size();t&lt;n;t++)&#123;</span><br><span class="line">					<span class="comment">//获得任务执行的结果</span></span><br><span class="line">					Future&lt;ImageData&gt; f=completionService.take();</span><br><span class="line"></span><br><span class="line">					ImageData imageData=f.get();</span><br><span class="line">					renderImage(iamgeData);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;<span class="keyword">catch</span>(InterruptedException e)&#123;</span><br><span class="line">				Thread.currentThread().interrupt();</span><br><span class="line">			&#125;<span class="keyword">catch</span> (ExecutionException e)&#123;</span><br><span class="line">				<span class="keyword">throw</span> launderThrowable(e.getCause());</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在初始化CompletionService的时候，我们可以指定不同的executor，也可以指定相同的executor。这与Future是非常相似的。</p>
 <hr>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>通过围绕任务执行来设计应用程序，可以简化开发过程，并有助于实现并发。Executor框架将任务提交与执行策略解耦开来，同时还支持多种不同类型的执行策略。当需要创建线程执行任务是，可以考虑使用Executor。除此之外我们还可以通过Callable和Future来获得对任务更多的控制。</p>
@@ -294,7 +201,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0hub9q0007qap2pheezoas" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/12/22/java并发编程二（任务执行控制）/" data-id="cix0i4m8r0006x2p2zmntatr3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -425,7 +332,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="cix0hub9r0009qap27yj8ajs2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/11/06/关于类拷贝的分析/" data-id="cix0i4m8q0004x2p2wl9fjj9j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -491,7 +398,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/09/04/http与https的区别/" data-id="cix0hub8o0000qap2up51sndn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/09/04/http与https的区别/" data-id="cix0i4m8d0000x2p2cargmzya" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -587,7 +494,7 @@ void renderPage(CharSequence source){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/15/java-IO/" data-id="cix0hub8u0001qap2ms0a6e6t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/15/java-IO/" data-id="cix0i4m8j0001x2p2dgx2alib" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
@@ -628,7 +535,7 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Arkiv</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
@@ -638,7 +545,7 @@ void renderPage(CharSequence source){
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Siste innlegg</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
